@@ -1,40 +1,49 @@
-var box;
-var bordas;
 
+var trex ,trex_correndo, bordas;
+var solo ,solo_image;
 
-function setup() {
-  createCanvas(1350,600);
+function preload(){
+  trex_correndo = loadAnimation("trex1.png","trex3.png","trex4.png");
+  solo_image = loadImage("ground2.png");
+}
+
+function setup(){
+  createCanvas(600,200)
   
-  box = createSprite(700,300,40,40);
+  //crie um sprite de trex
+  trex = createSprite(30,160,20,50);
+  trex.addAnimation("corrida",trex_correndo);
+  trex.scale = 0.5;
+
+
+  solo = createSprite(300,180,600,20);
+  solo.addImage(solo_image);
+  solo.x = solo.width/2;
+
   bordas = createEdgeSprites();
+  
 }
 
+function draw(){
+  background(220);
+  solo.velocityX = -2;
 
-function draw() 
-{
-  background(30);
+  console.log(solo.x);
 
-  if(keyIsDown(RIGHT_ARROW)){
-    box.x = box.x + 4;
+
+  if(solo.x<0){
+   solo.x = solo.width/2;
   }
 
-  if(keyIsDown(LEFT_ARROW)){
-    box.x = box.x + -4;
+
+  if(keyDown("space")){
+    trex.velocityY = -10;
   }
 
-  if(keyIsDown(UP_ARROW)){
-    box.y= box.y + -4;
-  }
+  trex.velocityY = trex.velocityY + 0.5;
 
-  if(keyIsDown(DOWN_ARROW)){
-    box.y= box.y + 4;
-  }
+  trex.collide(solo);
 
-  box.bounceOff(bordas[3]);
-drawSprites();
+  drawSprites();
 
 }
-
-
-
-
