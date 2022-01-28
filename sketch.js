@@ -4,6 +4,10 @@ var soloinv;
 var nuvem ,nuvem_image;
 var obstaculo, obs1, obs2, obs3, obs4, obs5, obs6;
 var score = 0;
+var gruponuvens, grupoobs;
+var JOGAR = 1;
+var ENCERRAR = 0;
+var gamestate = JOGAR;
 
 function preload(){
     trex_correndo = loadAnimation("trex1.png","trex3.png","trex4.png");
@@ -27,10 +31,15 @@ function setup(){
     trex = createSprite(30,160,20,50);
     trex.addAnimation("corrida",trex_correndo);
     trex.scale = 0.5;
+    trex.setCollider("circle",0,0,40);
+    //trex.debug = true;
 
     solo = createSprite(300,180,600,20);
     solo.addImage(solo_image);
     solo.x = solo.width/2;
+
+    gruponuvens = new Group();
+    grupoobs = new Group();
 
 
 
@@ -41,22 +50,28 @@ function setup(){
 function draw(){
     background("white");
     text("Score: "+score,530,50);
-    score = score+Math.round(frameCount/200);
-    solo.velocityX = -2;
-    console.log(frameCount);
-
-    if(solo.x<0){  
-        solo.x = solo.width/2;
- }
-    if(keyDown("space")&&trex.y>160){
-        trex.velocityY = -12;
-}
-    trex.velocityY = trex.velocityY + 0.5;
+    if(gamestate === JOGAR){
+        solo.velocityX = -2;
+        score = score+Math.round(frameCount/200);
+        if(solo.x<0){  
+            solo.x = solo.width/2;
+         }
+         if(keyDown("space")&&trex.y>160){
+             trex.velocityY = -12;
+        }
+        trex.velocityY = trex.velocityY + 0.5;
+        gerarobstaculos();
+        gerarnuvem();
+        if(grupoobs.isTouching(trex)){
+            gamestate = ENCERRAR;
+        }
+    }
+    else if(gamestate === ENCERRAR){
+        solo.velocityX = 0;
+        grupoobs.setVelocityXEach(0);
+        gruponuvens.setVelocityXEach(0);
+    }
     trex.collide(soloinv);
-    
-
-    gerarobstaculos();
-    gerarnuvem();
     drawSprites();
 }
 
@@ -70,6 +85,7 @@ function gerarnuvem(){
         nuvem.depth = trex.depth;
         trex.depth+=1;
         nuvem.lifetime = 350;
+        gruponuvens.add(nuvem);
     }
 }
 function gerarobstaculos(){
@@ -94,6 +110,7 @@ function gerarobstaculos(){
         }
         obstaculo.scale = 0.6;
         obstaculo.lifetime = 350;
+        grupoobs.add(obstaculo);
     }
 
 }
