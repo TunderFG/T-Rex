@@ -8,9 +8,13 @@ var gruponuvens, grupoobs;
 var JOGAR = 1;
 var ENCERRAR = 0;
 var gamestate = JOGAR;
+var over, gameover;
+var start, gamestart;
+var trex_parado;
 
 function preload(){
     trex_correndo = loadAnimation("trex1.png","trex3.png","trex4.png");
+    trex_parado = loadAnimation("trex_collided.png");
     
     solo_image = loadImage("ground2.png");
 
@@ -22,6 +26,9 @@ function preload(){
     obs4 = loadImage("obstacle4.png");
     obs5 = loadImage("obstacle5.png");
     obs6 = loadImage("obstacle6.png");
+
+    over = loadImage("gameOver.png");
+    start = loadImage("restart.png");
     
 }
 
@@ -30,6 +37,7 @@ function setup(){
     
     trex = createSprite(30,160,20,50);
     trex.addAnimation("corrida",trex_correndo);
+    trex.addAnimation("parado",trex_parado);
     trex.scale = 0.5;
     trex.setCollider("circle",0,0,40);
     //trex.debug = true;
@@ -37,6 +45,13 @@ function setup(){
     solo = createSprite(300,180,600,20);
     solo.addImage(solo_image);
     solo.x = solo.width/2;
+
+    gameover = createSprite(300,90);
+    gameover.addImage(over);
+
+    gamestart = createSprite(300,150);
+    gamestart.addImage(start);
+    gamestart.scale = 0.7;
 
     gruponuvens = new Group();
     grupoobs = new Group();
@@ -52,6 +67,9 @@ function draw(){
     text("Score: "+score,530,50);
     if(gamestate === JOGAR){
         solo.velocityX = -2;
+        gameover.visible = false;
+        gamestart.visible = false;
+        trex.collide(soloinv);
         score = score+Math.round(frameCount/200);
         if(solo.x<0){  
             solo.x = solo.width/2;
@@ -68,10 +86,16 @@ function draw(){
     }
     else if(gamestate === ENCERRAR){
         solo.velocityX = 0;
+        trex.velocityY = 3;
         grupoobs.setVelocityXEach(0);
         gruponuvens.setVelocityXEach(0);
+        gruponuvens.setLifetimeEach(-1);
+        grupoobs.setLifetimeEach(-1);
+        gameover.visible = true;
+        gamestart.visible = true;
+        trex.changeAnimation("parado",trex_parado);
+        
     }
-    trex.collide(soloinv);
     drawSprites();
 }
 
