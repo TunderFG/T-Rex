@@ -11,6 +11,8 @@ var gamestate = JOGAR;
 var over, gameover;
 var start, gamestart;
 var trex_parado;
+var jump_sound,die_sound,checkPoint_sound;
+var mensagem;
 
 function preload(){
     trex_correndo = loadAnimation("trex1.png","trex3.png","trex4.png");
@@ -29,11 +31,18 @@ function preload(){
 
     over = loadImage("gameOver.png");
     start = loadImage("restart.png");
+
+    jump_sound = loadSound("jump.mp3");
+    die_sound = loadSound("die.mp3");
+    checkPoint_sound = loadSound("checkPoint.mp3");
     
 }
 
 function setup(){
     createCanvas(600,200);
+
+    //mensagem = "isso é uma mensagem";
+    //console.log(mensagem);
     
     trex = createSprite(30,160,20,50);
     trex.addAnimation("corrida",trex_correndo);
@@ -46,12 +55,6 @@ function setup(){
     solo.addImage(solo_image);
     solo.x = solo.width/2;
 
-    gameover = createSprite(300,90);
-    gameover.addImage(over);
-
-    gamestart = createSprite(300,150);
-    gamestart.addImage(start);
-    gamestart.scale = 0.7;
 
     gruponuvens = new Group();
     grupoobs = new Group();
@@ -60,33 +63,49 @@ function setup(){
 
     soloinv = createSprite(300,190,600,10);
     soloinv.visible = false;
+
+    gameover = createSprite(300,90);
+    gameover.addImage(over);
+
+    gamestart = createSprite(300,150);
+    gamestart.addImage(start);
+    gamestart.scale = 0.7;
 }
 
 function draw(){
     background("white");
+    console.log(mensagem);
     text("Score: "+score,530,50);
     if(gamestate === JOGAR){
-        solo.velocityX = -2;
+        solo.velocityX = -(4+score/500);
         gameover.visible = false;
         gamestart.visible = false;
-        trex.collide(soloinv);
-        score = score+Math.round(frameCount/200);
+        score = score+Math.round(getFrameRate()/60);
         if(solo.x<0){  
             solo.x = solo.width/2;
          }
          if(keyDown("space")&&trex.y>160){
              trex.velocityY = -12;
+             jump_sound.play();
         }
         trex.velocityY = trex.velocityY + 0.5;
         gerarobstaculos();
         gerarnuvem();
+        if(score>0&&score%500 === 0){
+            checkPoint_sound.play();
+        }
         if(grupoobs.isTouching(trex)){
             gamestate = ENCERRAR;
+            die_sound.play();
         }
     }
+
+
     else if(gamestate === ENCERRAR){
+        gameover.visible = true;
+        gamestart.visible = true;
         solo.velocityX = 0;
-        trex.velocityY = 3;
+        //trex.velocityY = 3;
         grupoobs.setVelocityXEach(0);
         gruponuvens.setVelocityXEach(0);
         gruponuvens.setLifetimeEach(-1);
@@ -94,8 +113,12 @@ function draw(){
         gameover.visible = true;
         gamestart.visible = true;
         trex.changeAnimation("parado",trex_parado);
+        if(mousePressedOver(gamestart)){
+            reset();
+        }
         
     }
+    trex.collide(soloinv);
     drawSprites();
 }
 
@@ -115,7 +138,7 @@ function gerarnuvem(){
 function gerarobstaculos(){
     if(frameCount%100 === 0){
         obstaculo = createSprite(600,165,10,40);
-        obstaculo.velocityX = -3;
+        obstaculo.velocityX = -(5+score/100);
         var rend = Math.round(random(1,6));
         switch(rend){
             case 1: obstaculo.addImage(obs1);
@@ -137,4 +160,14 @@ function gerarobstaculos(){
         grupoobs.add(obstaculo);
     }
 
+}
+
+function reset(){
+    gamestate = JOGAR;
+    gruponuvens.destroyEach();
+    grupoobs.destroyEach();
+    trex.changeAnimation("corrida",trex_correndo);
+    score = 0;
+    
+    
 }
